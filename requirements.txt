@@ -1,0 +1,5 @@
+pandas
+fastapi
+tensorflow
+uvicorn
+pytest

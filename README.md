@@ -1,1 +1,0 @@
-# Mantenimiento_predictivo
