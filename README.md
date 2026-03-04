@@ -182,3 +182,32 @@ Validación de tipos de datos.
 Control de valores fuera de rango.
 
 Respuesta HTTP adecuada (400, 422, 500).
+
+# Tests
+
+## Tests de datos
+test de archivo que existe:
+    compruebe que el archivo existe 
+
+test de dataset:
+    comprueba que el dataset no esta vacio
+
+
+test de implementacion de datos:
+    este test se encarga de verificar que los datos se han implementado correctamente.
+
+test de rangos variable:
+    comprueba que las variables se encuentran en el rango correcto
+
+test de columnas:
+    comprueba que tiene las columnas esperadas.
+
+test de valor nulo:
+    comprueba que no haya valores nulos
+
+test de columnas vacias:
+    comprueba que no haya columnas vacias
+
+## Tests de API
+tests de los endpoints:
+    comprueba los endpoint
