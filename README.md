@@ -1,4 +1,4 @@
-# Definición del Proyecto
+# 1. Definición del Proyecto
 # 1.1 Propósito del sistema Propósito del sistema
 ## ¿Qué problema resuelve?
 El sistema resuelve el problema de detección temprana de fallos en procesos industriales.
@@ -53,7 +53,7 @@ Es decir, se transforma el análisis en un servicio inteligente listo para produ
 Dataset utilizado:
 Chemical Process Monitoring Time-Series Dataset (Kaggle)
 
-Fuente: Dataset público de simulación industrial con sensores de reactores químicos.
+Fuente: https://www.kaggle.com/datasets/rohit8527kmr7518/chemical-process-monitoring-time-series-dataset/data
 
 Tipo de problema
 Clasificación → Predicción de tipo de fallo (fault_type)
@@ -101,8 +101,8 @@ Modelo propio Predice el fallo y el tiempo restante.
  Modelo Hugging Face Analiza patrones o ayuda a clasificar estados complejos.
 IA Generativa Genera un informe técnico explicativo en lenguaje natural.
 
-# 2.1 Arquitectura y Encaje de las Piezas
-# Modelo propio de Machine Learning
+# 2 Arquitectura y Encaje de las Piezas
+## 2.1 Modelo propio de Machine Learning
 Tipo:
 
 Clasificación multiclase
@@ -178,7 +178,7 @@ Salida: Tipo de modelo, fecha de entrenamiento, métricas.
 
 
 
-# Tests
+# 3. Tests
 
 ## Tests de datos
 test de archivo que existe:
