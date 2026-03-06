@@ -103,17 +103,17 @@ IA Generativa Genera un informe técnico explicativo en lenguaje natural.
 
 # 2 Arquitectura y Encaje de las Piezas
 ## 2.1 Modelo propio de Machine Learning
-Tipo:
 
-Clasificación multiclase
+Machine Learning Targets
 
-Regresión
+### Classification
+ fault_type — multi-class fault diagnosis (0–4)
 
-Variable objetivo:
-
-fault_type
-
-time_to_fault_min
+### Regression
+ efficiency_loss_pct — estimated production efficiency degradation
+ 
+### Forecasting / Survival Analysis
+ time_to_fault_min — remaining time before fault onset
 
 Integración en API:
 El modelo se carga al iniciar el servidor y se ejecuta cuando el usuario llama al endpoint /predict.
