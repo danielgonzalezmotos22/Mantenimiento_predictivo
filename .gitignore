@@ -1,0 +1,10 @@
+/data
+# Caché genérica
+.cache/
+*.cache
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
