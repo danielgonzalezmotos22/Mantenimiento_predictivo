@@ -1,6 +1,5 @@
 pandas
 fastapi
-tensorflow
 uvicorn
 pytest
 seaborn
