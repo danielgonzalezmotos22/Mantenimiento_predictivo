@@ -18,9 +18,12 @@ app = FastAPI(
 # Carga de modelos_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 
-BASE_DIR = Path(__file__).resolve().parent
+# BASE_DIR = Path(__file__).resolve().parent
 
-MODELS_DIR = BASE_DIR / "notebooks"
+# MODELS_DIR = BASE_DIR / "notebooks"
+
+BASE_DIR = Path(__file__).resolve().parent
+MODELS_DIR = BASE_DIR
 
 try:
 
@@ -29,8 +32,17 @@ try:
 except Exception as e:
 
     model_fault = None
-
+    
     print(f"Error cargando fault_classification_model.pkl: {e}")
+
+try:
+
+    model_time = joblib.load(MODELS_DIR / "time_to_fault_model.pkl")
+
+except Exception as e:
+
+    model_time = None
+    print(f"Error cargando time_to_fault_model.pkl: {e}")
 
 try:
 
@@ -53,8 +65,8 @@ class PredictInput(BaseModel):
     feed_flow_rate       : float
     coolant_flow_rate    : float
     agitator_speed_rpm   : float
-    operating_regime     : str = " normal "
-    reactor_id           : str = " R1 "
+    operating_regime     : str = "normal"
+    reactor_id           : str = "R1"
     ambient_temp_effect  : float = 1.2
 
     reaction_rate: float = 0.87
@@ -82,7 +94,7 @@ class ReportInput(BaseModel):
 
 def health():
 
-    return { " status " : " ok "}
+    return { "status" : "ok"}
 
 
 @app.get("/model-info")
@@ -91,11 +103,11 @@ def model_info():
 
     return {
 
-        " fault_classification_model_loaded " : model_fault is not None,
-        " time_to_fault_model_loaded "        : model_time is not None,
-        " models_path "                       : str(MODELS_DIR),
-        " expected_features "                 : 18,
-        " version "                           : " 2.1.0 "
+        "fault_classification_model_loaded" : model_fault is not None,
+        "time_to_fault_model_loaded"        : model_time is not None,
+        "models_path"                       : str(MODELS_DIR),
+        "expected_features"                 : 18,
+        "version"                           : "2.1.0"
     }
 
 
@@ -104,24 +116,24 @@ def get_sensores():
     return {
         "sensores": [
             {
-                " operating_regime "     : " normal ",
-                " reactor_id "           : " R1 ",
-                " ambient_temp_effect "  : 1.2,
-                " reactor_temp "         : 182.5,
-                " reactor_pressure "     : 15.7,
-                " feed_flow_rate "       : 100.0,
-                " coolant_flow_rate "    : 80.2,
-                " agitator_speed_rpm "   : 300.5,
-                " reaction_rate "        : 0.87,
-                " conversion_rate "      : 0.91,
-                " selectivity     "      : 0.88,
-                " yield_pct "            : 92.4,
-                " vibration_rms "        : 1.7,
-                " motor_current "        : 12.5,
-                " power_consumption_kw " : 45.8,
-                " temp_setpoint "        : 180.0,
-                " pressure_setpoint "    : 15.0,
-                " efficiency_loss_pct "  : 3.2
+                "operating_regime"     : "normal",
+                "reactor_id"           : "R1",
+                "ambient_temp_effect"  : 1.2,
+                "reactor_temp"         : 182.5,
+                "reactor_pressure"     : 15.7,
+                "feed_flow_rate"       : 100.0,
+                "coolant_flow_rate"    : 80.2,
+                "agitator_speed_rpm"   : 300.5,
+                "reaction_rate"        : 0.87,
+                "conversion_rate"      : 0.91,
+                "selectivity"          : 0.88,
+                "yield_pct"            : 92.4,
+                "vibration_rms"        : 1.7,
+                "motor_current"        : 12.5,
+                "power_consumption_kw" : 45.8,
+                "temp_setpoint"        : 180.0,
+                "pressure_setpoint"    : 15.0,
+                "efficiency_loss_pct"  : 3.2
             }
         ]
     }
@@ -132,30 +144,30 @@ def predict(data: PredictInput):
     if model_fault is None or model_time is None:
         raise HTTPException (
             status_code = 500,
-            detail      = " Los modelos no están cargados correctamente. "
+            detail      = "Los modelos no están cargados correctamente."
         )
 
 
     input_df = pd.DataFrame([{
 
-        " operating_regime "     : data.operating_regime,
-        " reactor_id "           : data.reactor_id,
-        " ambient_temp_effect "  : data.ambient_temp_effect,
-        " reactor_temp "         : data.reactor_temp,
-        " reactor_pressure "     : data.reactor_pressure,
-        " feed_flow_rate "       : data.feed_flow_rate,
-        " coolant_flow_rate "    : data.coolant_flow_rate,
-        " agitator_speed_rpm "   : data.agitator_speed_rpm,
-        " reaction_rate "        : data.reaction_rate,
-        " conversion_rate "      : data.conversion_rate,
-        " selectivity "          : data.selectivity,
-        " yield_pct "            : data.yield_pct,
-        " vibration_rms "        : data.vibration_rms,
-        " motor_current "        : data.motor_current,
-        " power_consumption_kw " : data.power_consumption_kw,
-        " temp_setpoint "        : data.temp_setpoint,
-        " pressure_setpoint "    : data.pressure_setpoint,
-        " efficiency_loss_pct "  : data.efficiency_loss_pct
+        "operating_regime"     : data.operating_regime,
+        "reactor_id"           : data.reactor_id,
+        "ambient_temp_effect"  : data.ambient_temp_effect,
+        "reactor_temp"         : data.reactor_temp,
+        "reactor_pressure"     : data.reactor_pressure,
+        "feed_flow_rate"       : data.feed_flow_rate,
+        "coolant_flow_rate"    : data.coolant_flow_rate,
+        "agitator_speed_rpm"   : data.agitator_speed_rpm,
+        "reaction_rate"        : data.reaction_rate,
+        "conversion_rate"      : data.conversion_rate,
+        "selectivity"          : data.selectivity,
+        "yield_pct"            : data.yield_pct,
+        "vibration_rms"        : data.vibration_rms,
+        "motor_current"        : data.motor_current,
+        "power_consumption_kw" : data.power_consumption_kw,
+        "temp_setpoint"        : data.temp_setpoint,
+        "pressure_setpoint"    : data.pressure_setpoint,
+        "efficiency_loss_pct"  : data.efficiency_loss_pct
     }])
 
     try:
@@ -174,9 +186,9 @@ def predict(data: PredictInput):
 
         return {
             
-            " fault_type"         : int(fault_prediction[0]),
-            " probability "       : round(probability, 4),
-            " time_to_fault_min " : float(time_prediction[0])
+            "fault_type"         : int(fault_prediction[0]),
+            "probability"        : round(probability, 4),
+            "time_to_fault_min"  : float(time_prediction[0])
         }
 
     except Exception as e:
@@ -202,4 +214,3 @@ def generate_report(data: ReportInput):
     )
 
     return {"report": report}
-
