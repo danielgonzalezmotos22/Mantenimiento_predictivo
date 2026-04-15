@@ -41,6 +41,7 @@ except Exception as e:
 
 #_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
+
                                                 # Esto es lo que tiene que mandar la persona a /predict
 class DatosEntrada(BaseModel):
 
@@ -100,6 +101,14 @@ def sacar_mensaje(probabilidad, tiempo):
 
         return "No parece urgente ahora mismo, pero mejor seguir vigilando los datos."
 
+
+tipos_fallo = {
+    0: "sin fallo",
+    1: "fallo de presion",
+    2: "fallo de temperatura",
+    3: "fallo mecanico"
+}
+
 #_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 @app.get("/")
@@ -114,7 +123,7 @@ def inicio():
     }
 
 #_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-    
+
 @app.get("/health")
 
 def health():
@@ -126,7 +135,7 @@ def health():
     }
 
 #_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-    
+
 @app.get("/model-info")
 
 def model_info():
@@ -139,7 +148,7 @@ def model_info():
         "numero_features_esperadas": 18
     }
 
-#_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _    
+#_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 @app.post("/predict")
 
@@ -194,18 +203,20 @@ def predict(datos: DatosEntrada):
 
         nivel_riesgo = sacar_nivel_riesgo(probabilidad)
         mensaje = sacar_mensaje(probabilidad, float(pred_tiempo))
-
+       
         return {
 
             "resultado": {
 
                 "tipo_de_fallo": int(pred_fallo),
+                "tipo_de_fallo": int(pred_fallo),
+                "descripcion_fallo": tipos_fallo.get(int(pred_fallo), "desconocido"),
                 "probabilidad": round(probabilidad, 4),
-                "tiempo_estimado_hasta_fallo_min": round(float(pred_tiempo), 2)
+                "tiempo_estimado_hasta_fallo_min": round(float(pred_tiempo), 0)
             },
 
             "interpretacion": {
-                
+
                 "nivel_de_riesgo": nivel_riesgo,
                 "mensaje": mensaje
             }
@@ -241,3 +252,4 @@ def generate_report(datos: DatosReporte):
 
         "report": texto
     }
+
