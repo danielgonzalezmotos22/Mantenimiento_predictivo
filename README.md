@@ -1,127 +1,212 @@
-# Sistema de Detección Temprana de Fallos en Procesos Químicos
+# 1. Definición del Proyecto
+# 1.1 Propósito del sistema Propósito del sistema
+## ¿Qué problema resuelve?
+El sistema resuelve el problema de detección temprana de fallos en procesos industriales.
 
-API REST construida con **FastAPI** que combina:
+En entornos industriales, una avería inesperada puede generar:
 
-1. **Modelo propio** (RandomForest) — predice `fault_type` (clasificación 0–4) y `time_to_fault_min` (regresión).
-2. **Modelo Hugging Face** (`facebook/bart-large-mnli`, zero-shot) — clasifica la severidad del estado del sistema.
-3. **LLM de Groq Cloud** (`llama-3.3-70b-versatile` por defecto) — genera informes técnicos en lenguaje natural.
+Paradas de producción
 
-Frontend en **Streamlit** para interacción manual.
+Pérdidas económicas
 
----
+Riesgos operativos
 
-## Estructura del proyecto
+Costes elevados de reparación
 
-```
-proyecto/
-├── app/
-│   ├── main.py                 # Punto de entrada FastAPI + lifespan
-│   ├── config.py               # Settings desde .env
-│   ├── routers/                # Un archivo por endpoint
-│   ├── schemas/                # Modelos Pydantic
-│   └── services/               # Lógica de modelos y LLM
-├── tests/                      # pytest (datos + API)
-├── frontend/
-│   └── streamlit_app.py
-├── models/                     # .pkl entrenados (no incluidos)
-├── data/                       # CSV (no incluido)
-├── requirements.txt
-├── pytest.ini
-├── .env.example
-└── README.md
-```
+El sistema permite:
 
----
+Detectar posibles fallos antes de que ocurran
 
-## Instalación
+Estimar el tiempo restante hasta una avería
 
-```bash
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env               # rellenar con tu GROQ_API_KEY
-```
+Generar explicaciones automáticas del estado del sistema
 
-Coloca los modelos entrenados en `models/`:
+### ¿Para quién está pensado?
+Está pensado para:
 
-- `models/fault_classifier.pkl`
-- `models/time_to_fault_regressor.pkl`
+Ingenieros de mantenimiento
 
-Y el dataset en `data/chemical_process_timeseries.csv`.
+Técnicos industriales
 
-> **Nota:** los `.pkl` deben ser pipelines de scikit-learn que hagan internamente el preprocesado (encoding de `operating_regime` y `reactor_id`, escalado, etc.). El servicio les pasa un DataFrame con los nombres de columna originales.
+Responsables de planta
 
----
+Empresas que trabajen con maquinaria continua
 
-## Arrancar la API
+### ¿Qué valor aporta frente a analizar un dataset en un notebook?
+Un notebook solo permite análisis puntual.
 
-```bash
-uvicorn app.main:app --reload
-```
+Este sistema aporta:
 
-Documentación interactiva: <http://localhost:8000/docs>
+Predicción en tiempo real mediante API REST
 
-## Arrancar el frontend
+Integración en sistemas industriales
 
-En otra terminal, con la API ya corriendo:
+Automatización del diagnóstico
 
-```bash
-streamlit run frontend/streamlit_app.py
-```
+Generación automática de informes técnicos en lenguaje natural
 
----
+Uso combinado de modelos propios + modelos preentrenados + IA generativa
 
-## Endpoints
+Es decir, se transforma el análisis en un servicio inteligente listo para producción.
 
-| Método | Ruta                  | Descripción                                              |
-|--------|-----------------------|----------------------------------------------------------|
-| GET    | `/health`             | Estado del servidor y de los recursos cargados           |
-| GET    | `/model-info`         | Tipo de modelos, clases, columnas y fecha de carga       |
-| POST   | `/predict`            | Predicción de `fault_type` + `time_to_fault_min` + severidad |
-| POST   | `/generate-report`    | Informe técnico en lenguaje natural a partir de una predicción |
-| GET    | `/sensores`           | Histórico paginado del CSV (filtro por `reactor_id`)     |
-| GET    | `/sensores/reactores` | Lista de reactores disponibles                           |
+# 1.2 Dataset elegido
+Dataset utilizado:
+Chemical Process Monitoring Time-Series Dataset (Kaggle)
 
-### Ejemplo de `POST /predict`
+Fuente: https://www.kaggle.com/datasets/rohit8527kmr7518/chemical-process-monitoring-time-series-dataset/data
 
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "operating_regime": "A",
-    "reactor_id": "A_R1",
-    "ambient_temp_effect": 0.0,
-    "reactor_temp": 181.13,
-    "reactor_pressure": 15.79,
-    "feed_flow_rate": 101.10,
-    "coolant_flow_rate": 79.15,
-    "agitator_speed_rpm": 305.78,
-    "reaction_rate": 0.72,
-    "conversion_rate": 99.15,
-    "selectivity": 91.92,
-    "yield_pct": 82.03,
-    "vibration_rms": 1.47,
-    "motor_current": 45.88,
-    "power_consumption_kw": 41.29,
-    "temp_setpoint": 180.0,
-    "pressure_setpoint": 12.0
-  }'
-```
+Tipo de problema
+Clasificación → Predicción de tipo de fallo (fault_type)
 
----
+Regresión → Predicción de tiempo hasta fallo (time_to_fault_min)
 
-## Tests
+Justificación del dataset
+Es adecuado porque:
 
-```bash
-pytest
-```
+Permite entrenar un modelo propio de clasificación y regresión.
+Tiene múltiples variables numéricas reales (temperatura, presión, vibración, etc.).
+Permite aplicar modelos preentrenados para análisis semántico o explicación.
+Facilita la incorporación de generación de lenguaje natural para explicar resultados técnicos.
 
-- **`tests/test_data.py`** — existencia del CSV, columnas esperadas, rangos físicos, ausencia de nulos en columnas críticas, valores válidos de `fault_type` y `operating_regime`.
-- **`tests/test_api.py`** — contratos de los endpoints, códigos HTTP (200, 404, 422), validación Pydantic, pagination y filtros del histórico.
+# 1.3 Tipo de aplicación
+Tipo de servicio
+Servicio predictivo + Asistente inteligente basado en datos industriales
 
-Los tests de la API **no necesitan los `.pkl` reales ni el API key de Groq**: las dependencias se inyectan como mocks vía `app.dependency_overrides`. Los tests de datos sí leen el CSV real (se saltan automáticamente si no está).
+Ejemplo completo de uso real
+Quién hace la petición:
+Un sistema de monitorización industrial o un técnico de mantenimiento.
 
----
+Endpoints utilizados:
+POST /predict
+
+Qué envía:
+Datos actuales del sensor (temperatura, presión, vibración, etc.)
+
+Qué devuelve el sistema:
+
+Tipo de fallo predicho
+
+Probabilidad asociada
+
+Tiempo estimado hasta fallo
+
+Informe técnico generado automáticamente (opcional)
+
+GET /sensores
+Recibe el usuario la lectura del histórico de los sensores.
+
+
+Cómo se combinan los modelos
+Modelo propio Predice el fallo y el tiempo restante.
+ Modelo Hugging Face Analiza patrones o ayuda a clasificar estados complejos.
+IA Generativa Genera un informe técnico explicativo en lenguaje natural.
+
+# 2 Arquitectura y Encaje de las Piezas
+## 2.1 Modelo propio de Machine Learning
+
+Machine Learning Targets
+
+### Classification
+ fault_type — multi-class fault diagnosis (0–4)
+
+### Regression
+ efficiency_loss_pct — estimated production efficiency degradation
+ 
+### Forecasting / Survival Analysis
+ time_to_fault_min — remaining time before fault onset
+
+Integración en API:
+El modelo se carga al iniciar el servidor y se ejecuta cuando el usuario llama al endpoint /predict.
+
+# 2.2 Modelo preentrenado de Hugging Face
+Tipo de modelo:
+Modelo de clasificación
+
+Valor añadido:
+
+Mejora la interpretación del estado del sistema.
+
+Permite enriquecer la información obtenida del modelo propio.
+
+Integración:
+
+Se ejecuta después de la predicción principal para complementar el resultado antes de generar el informe final.
+
+# 2.3 Modelo de IA Generativa
+Tipo de respuesta:
+
+Informe técnico automático
+
+Recomendación de mantenimiento
+
+Explicación del fallo detectado
+
+
+# 2.4 Exposición mediante API REST
+Framework:
+FastAPI
+
+Endpoints principales (mínimo 4)
+/predict
+Predice tipo de fallo y tiempo restante.
+
+GET /sensores
+Recibe el usuario la lectura del histórico de los sensores.
+Entrada: None
+Salida: Histórico de los sensores.
+
+Entrada: JSON con datos del sensor.
+Salida: Predicción + probabilidad + tiempo estimado.
+
+/generate-report
+Genera informe técnico en lenguaje natural a partir de una predicción.
+
+Entrada: Resultado del modelo.
+Salida: Texto generado automáticamente.
+
+/health
+Verifica que la API está activa.
+
+Entrada: ninguna.
+Salida: Estado del servidor.
+
+/model-info
+Devuelve información sobre el modelo cargado.
+
+Entrada: ninguna.
+Salida: Tipo de modelo, fecha de entrenamiento, métricas.
+
+
+
+# 3. Tests
+
+## Tests de datos
+test de archivo que existe:
+    compruebe que el archivo existe 
+
+test de dataset:
+    comprueba que el dataset no esta vacio
+
+
+test de implementacion de datos:
+    este test se encarga de verificar que los datos se han implementado correctamente.
+
+test de rangos variable:
+    comprueba que las variables se encuentran en el rango correcto
+
+test de columnas:
+    comprueba que tiene las columnas esperadas.
+
+test de valor nulo:
+    comprueba que no haya valores nulos
+
+test de columnas vacias:
+    comprueba que no haya columnas vacias
+
+## Tests de API
+tests de los endpoints:
+    comprueba los endpoint
+Respuesta HTTP adecuada (400, 422, 500).
 
 ## Mapeo de fallos
 
@@ -134,10 +219,3 @@ Los tests de la API **no necesitan los `.pkl` reales ni el API key de Groq**: la
 | 4      | Desgaste mecánico                        |
 
 ---
-
-## Notas de diseño
-
-- **Lifespan tolerante a errores**: si faltan los `.pkl` o el CSV, la API arranca igual; los endpoints afectados responden `503` en lugar de impedir el arranque.
-- **Modelo HF lazy**: `bart-large-mnli` pesa ~1.6 GB; se descarga la primera vez que se llama a `/predict`. Si quieres una alternativa más ligera, cambia `HF_MODEL_NAME` en `.env` por algo como `valhalla/distilbart-mnli-12-3`.
-- **El fallo del HF no rompe la respuesta**: si el clasificador semántico falla (sin red, sin GPU, etc.), `/predict` devuelve la predicción sin el campo `severity`.
-- **Inyección de dependencias**: todas las dependencias se obtienen vía `Depends`, lo que permite mockear cada servicio en tests sin tocar la app real.
